@@ -1,0 +1,47 @@
+version: '3.3'
+
+services:
+  php-srv:
+    image: php:8.2-apache
+    container_name: webserver
+    ports:
+      - "8000:80"
+    volumes:
+      - ./App:/var/www/html
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - app-network
+
+  db-srv:
+    image: mysql:8.0
+    container_name: mysqlserver
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: pass
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: hackthus
+      MYSQL_PASSWORD: pass
+    ports:
+      - "3307:3306"
+    networks:
+      - app-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: mysqlserver
+      PMA_USER: root
+      PMA_PASSWORD: pass
+    ports:
+      - "8080:80"
+    depends_on:
+      - db-srv
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
